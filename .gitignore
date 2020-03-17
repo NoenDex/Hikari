@@ -1,0 +1,11 @@
+packages/
+obj/
+bin/
+*.csproj.user
+*.hikari
+*.lst
+*.suo
+db.lock
+storage.ide
+HikariScript.Scanner.Generated.cs
+HikariScript.Parser.Generated.cs
