@@ -13,13 +13,9 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
-    - name: Setup .NET Core
-      uses: actions/setup-dotnet@v1
-      with:
-        dotnet-version: 3.1.101
-    - name: Restore NuGet packages
-      run: dotnet restore
-    - name: List tools
-      run: dir D:\a\Hikari\Hikari\packages\YaccLexTools.0.2.2\tools\*.*
-    - name: Build with dotnet
-      run: dotnet build --configuration Release
+    - name: Setup MSBuild.exe
+      uses: warrenbuckley/Setup-MSBuild@v1
+    - name: MSBuild
+      working-directory: src
+      run: msbuild MyProject.csproj
+
