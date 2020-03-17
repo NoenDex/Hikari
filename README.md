@@ -12,6 +12,8 @@
     - [Rules](#rules)
     - [Responsibility and license](#responsibility-and-license)
 
+![.NET Core](https://github.com/NoenDex/Hikari/workflows/.NET%20Core/badge.svg?branch=master)
+
 ## What is Hikari?
 Hikari (ひかり) is Japanese word for "Light". There is no particular reason why I chose it.
 It is a custom logon script engine for Microsoft Windows OS, executed during user's logon in Microsoft Windows session.
