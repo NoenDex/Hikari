@@ -19,5 +19,7 @@ jobs:
         dotnet-version: 3.1.101
     - name: Restore NuGet packages
       run: dotnet restore
+    - name: List tools
+      run: dir D:\a\Hikari\Hikari\packages\YaccLexTools.0.2.2\tools\*.*
     - name: Build with dotnet
       run: dotnet build --configuration Release
