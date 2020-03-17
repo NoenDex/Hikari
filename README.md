@@ -171,14 +171,16 @@ ALL <DRIVE LETTER>: = <UNC PATH>
 - // is a single line comment
 - /* */ is a multi-line block comment
 #### Automatic conflict resolution
-On normal run Hikari will get all local fixed drives and remove them from the available drives list, which initially is set to D: to Z: drive letters (A: to C: are presumed to be taken by default).
-After the parsing step check for more then one UNC is added to each drive letter.
-If there are no conflicts Hikari will start connecting the network drives and exits.
-Otherwise for each conflict every second UNC will be moved to the first available drive letter and that letter will makrked as used.
-The step above will be repeated until all drive letters contain only one UNC to be mapped to or until no more available letters.
-If the last occurs then emergency "flattening" will be executed, all remaining unresolved drives will take the first UNC and the rest will be discarded.
-All information is logged into User's profile folder, aka %USERPROFILE%\Hikari.log
-On every logon log is overwritten.
+- On normal run Hikari will get all local fixed drives and remove them from the available drives list, which initially is set to D: to Z: drive letters (A: to C: are presumed to be taken by default).
+- After the parsing step check for more then one UNC is added to each drive letter.
+- If there are no conflicts Hikari will:
+    - Disconnect any existing network shared drives
+    - Start connecting the network drives after checking UNC path exist and then exits.
+- Otherwise for each conflict every second UNC will be moved to the first available drive letter and that letter will marked as used.
+- The step above will be repeated until all drive letters contain only one UNC to be mapped to or until no more available letters.
+- If the last occurs then emergency "flattening" will be executed, all remaining unresolved drives will take the first UNC and the rest will be discarded.
+- All information is logged into User's profile folder, aka %USERPROFILE%\Hikari.log
+- On every execution the log file is overwritten!
 ## Responsibility and license
 - This is not commercial product, use it on your own responsibility.
 - Licensed under following:
