@@ -104,15 +104,6 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
     <None Include="packages.config" />
-    <None Include="README.md">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Include="shares.hikari">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Include="testcases.hikari">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
   </ItemGroup>
   <ItemGroup Label="HikariScriptFiles">
     <Compile Include="HikariScript.Parser.cs">
@@ -138,9 +129,6 @@
       <DependentUpon>HikariScript.parser</DependentUpon>
     </None>
     <None Include="HikariScript.parser" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="LICENSE" />
   </ItemGroup>
   <ItemGroup>
     <BootstrapperPackage Include="Microsoft.Net.Framework.3.5.SP1">
