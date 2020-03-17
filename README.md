@@ -1,5 +1,7 @@
 ﻿# Hikari
+
 - Content
+    - [Download](#download)
     - [What is Hikari?](#what-is-hikari)
     - [Why?](#why?)
     - [Used NuGet packages and sources](#used-nuget-packages-and-sources)
@@ -13,6 +15,9 @@
     - [Responsibility and license](#responsibility-and-license)
 
 ![.NET Core](https://github.com/NoenDex/Hikari/workflows/.NET%20Core/badge.svg?branch=master)
+
+## Download
+Download [lates release from here](https://github.com/NoenDex/Hikari/releases/).
 
 ## What is Hikari?
 Hikari (ひかり) is Japanese word for "Light". There is no particular reason why I chose it.
