@@ -16,6 +16,6 @@ jobs:
     - name: Setup MSBuild.exe
       uses: warrenbuckley/Setup-MSBuild@v1
     - name: MSBuild
-      working-directory: src
-      run: msbuild MyProject.csproj
+      working-directory: HikariLex
+      run: msbuild Hikari.csproj
 
