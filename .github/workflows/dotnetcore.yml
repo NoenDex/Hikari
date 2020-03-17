@@ -17,9 +17,6 @@ jobs:
     - name: Setup MSBuild.exe
       uses: warrenbuckley/Setup-MSBuild@v1
 
-    - name: Restore packages
-      run: nuget.exe restore Hikari.sln
-
     - name: MSBuild
       working-directory: .
       run: msbuild Hikari.sln /property:Configuration=Release
