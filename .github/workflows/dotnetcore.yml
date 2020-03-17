@@ -13,9 +13,14 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
+
     - name: Setup MSBuild.exe
       uses: warrenbuckley/Setup-MSBuild@v1
+
+    - name: Restore packages
+      run: nuget.exe restore Hikari.sln
+
     - name: MSBuild
-      working-directory: HikariLex
-      run: msbuild Hikari.csproj
+      working-directory: .
+      run: msbuild Hikari.sln
 
