@@ -189,8 +189,6 @@ namespace HikariLex
             {
                 parser.UserName = user.SamAccountName.Trim();
                 parser.Parse(script);
-
-                Console.WriteLine();
                 log.Info(parser.Model);
             }
             catch (HikariParserException x)
@@ -213,7 +211,8 @@ namespace HikariLex
             }
 
             stopwatch.Stop();
-            log.Info("\nTotal time elapsed: {0:00.00}s", stopwatch.Elapsed.TotalSeconds);
+            Console.WriteLine();
+            log.Info("Total time elapsed: {0:00.00}s", stopwatch.Elapsed.TotalSeconds);
             Console.WriteLine();
 
             return 0;
