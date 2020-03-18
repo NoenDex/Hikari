@@ -209,7 +209,6 @@ namespace HikariLex
             if (doMapping)
             {
                 DisconnectAllLocalNetworkDrives();
-                Task.Delay(500);
                 ConnectNetworkDrives(parser.Model);
             }
 
@@ -304,6 +303,8 @@ namespace HikariLex
 
         private static bool ConnectNetworkDrives(HikariModel model)
         {
+            log.Info("Connecting network drives...");
+            Console.WriteLine();
             bool success = true;
             Forker forker = new Forker();
 
@@ -327,6 +328,9 @@ namespace HikariLex
                         {
                             log.Error($"Network drive {DriveLetter} -> \"{unc}\" ERROR: {result}");
                             success = false;
+                        } else
+                        {
+                            log.Info($"{DriveLetter} -> \"{unc}\" [{expression}] connected.");
                         }
                     }
                 });
@@ -351,7 +355,7 @@ namespace HikariLex
                 switch (result)
                 {
                     case InvokeWindowsNetworking.NO_ERROR: //Success
-                        log.Info("Disconnect drive - Disconnected: {0}", networDriveName);
+                        log.Info("Disconnect drive: {0}", networDriveName);
                         break;
                     case InvokeWindowsNetworking.ERROR_BAD_PROFILE:
                         log.Error("Disconnect drive - Bad profile: {0}", networDriveName);
