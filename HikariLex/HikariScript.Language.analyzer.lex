@@ -49,6 +49,7 @@ OrOp			[Oo][Rr]
 AndOp			[Aa][Nn][Dd]
 Group			\"([^\"][A-Za-z0-9_\. \-&]*)\"
 UNC				\"([^\"][\\\\][A-Za-z0-9_\.\\ \-&]*\$?)\"
+ContainsOp      [Cc][Oo][Nn][Tt][Aa][Ii][Nn][Ss]
 
 %{
 
@@ -70,6 +71,7 @@ UNC				\"([^\"][\\\\][A-Za-z0-9_\.\\ \-&]*\$?)\"
 {NotOp}			{ return (int)Token.NOT; }
 {HomeOp}		{ return (int)Token.HOME; }
 {AllOp}			{ return (int)Token.ALL; }
+{ContainsOp}    { return (int)Token.CONTAINS; }
 
 "/*"					{ BEGIN(C_BLOCKCOMMENT); }
 <C_BLOCKCOMMENT>"*/"	{ BEGIN(INITIAL); }

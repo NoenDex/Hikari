@@ -38,7 +38,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 %start main
 
-%token OPEN_BRACKET, CLOSE_BRACKET, BLOCKOPEN, BLOCKCLOSE, DRIVELETTER, ASSIGN, OR, AND, GROUP, UNC, NOT, HOME, ALL
+%token OPEN_BRACKET, CLOSE_BRACKET, BLOCKOPEN, BLOCKCLOSE, DRIVELETTER, ASSIGN, OR, AND, GROUP, UNC, NOT, HOME, ALL, CONTAINS
 
 %%
 
@@ -77,7 +77,8 @@ expressions	: term
 			;
 
 term		: factor										
-			| NOT term										{ $$.result = !$2.result; $$.s = "NOT " + $2.s; }
+			| NOT OPEN_BRACKET term CLOSE_BRACKET			{ $$.result = !$2.result; $$.s = "NOT( " + $2.s + ")"; }
+			| CONTAINS OPEN_BRACKET term CLOSE_BRACKET		{ $$.result = Contains($3.s); $$.s = "CONTAINS( " + $3.s + ")"; }
 			| term AND term									{ $$.result = $1.result && $3.result; $$.s = $1.s + " AND " + $3.s; }
 			| term OR term									{ $$.result = $1.result || $3.result; $$.s = $1.s + " OR " + $3.s; }
 			;

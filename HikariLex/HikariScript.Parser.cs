@@ -87,6 +87,26 @@ namespace HikariLex
             return result;
         }
 
+        public bool Contains(string group)
+        {
+            group = StripQuotes(group);
+
+            if (string.IsNullOrWhiteSpace(group))
+            {
+                log.Error("Group is empty!");
+                return false;
+            }
+
+            group = group.ToUpper();
+
+            foreach (string g in groups.Select(gr => gr.ToUpper()))
+            {
+                if (g.Contains(group))
+                    return true;
+            }
+            return false;
+        }
+
         public void AddDrive(string Drive, string Expression, string UNC)
         {
             UNC = StripQuotes(UNC);
