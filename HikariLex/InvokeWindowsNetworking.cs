@@ -108,7 +108,9 @@ namespace HikariLex
         }
         #endregion
 
+#pragma warning disable CA2101 // Specify marshaling for P/Invoke string arguments
         [DllImport("mpr.dll", SetLastError = true, CharSet = CharSet.Ansi)]
+#pragma warning restore CA2101 // Specify marshaling for P/Invoke string arguments
         private static extern int WNetUseConnection(
             IntPtr hwndOwner,
             NETRESOURCE lpNetResource,
@@ -120,7 +122,9 @@ namespace HikariLex
             string lpResult
         );
 
+#pragma warning disable CA2101 // Specify marshaling for P/Invoke string arguments
         [DllImport("mpr.dll", SetLastError = true, CharSet = CharSet.Ansi)]
+#pragma warning restore CA2101 // Specify marshaling for P/Invoke string arguments
         private static extern int WNetCancelConnection2(
             string lpName,
             int dwFlags,
@@ -147,7 +151,9 @@ namespace HikariLex
         /// <param name="dwFlags">Connection type.  0 to retain only for current session or CONNECT_UPDATE_PROFILE to persist on session being logged out.</param>
         /// <param name="fForce">Specifies whether the disconnection should occur if there are open files or jobs on the connection. If this parameter is FALSE, the function fails if there are open files or jobs.</param>
         /// <returns></returns>
+#pragma warning disable CA2101 // Specify marshaling for P/Invoke string arguments
         [DllImport("Mpr.dll", EntryPoint = "WNetCancelConnection2A", CharSet = CharSet.Ansi)]
+#pragma warning restore CA2101 // Specify marshaling for P/Invoke string arguments
         public static extern int DropNetworkConnection(string lpName, int dwFlags, bool fForce);
 
         public static string connectToRemote(string localDrive, string remoteUNC)
