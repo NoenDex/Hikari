@@ -67,7 +67,6 @@ namespace HikariLex
 
         static int Main(string[] args)
         {
-
             string script = string.Empty;
 
             Stopwatch stopwatch = new Stopwatch();
@@ -188,6 +187,7 @@ namespace HikariLex
             var parser = new HikariScriptParser(groups);
             try
             {
+                parser.UserName = user.SamAccountName.Trim();
                 parser.Parse(script);
 
                 Console.WriteLine();
@@ -280,7 +280,7 @@ namespace HikariLex
         {
             if (showUserAlert)
             {
-                string msg = "There is a problem connecting some of your network drives.\nPlease, contact Service Desk at NCN 5678 to resolve the issue.";
+                string msg = "There is a problem connecting some of your network drives.\nPlease, contact Service Desk to resolve the issue.";
                 if (!string.IsNullOrEmpty(message))
                     msg = string.Format("{0}\n\nDetails: {1}", msg, message);
                 MessageBox.Show(msg, "Connect network drives", MessageBoxButtons.OK, MessageBoxIcon.Error);
@@ -291,10 +291,10 @@ namespace HikariLex
         {
             Console.WriteLine("Usage: Hikari.exe /s or /script file.hikari [/u or /user ADUserAccount]");
             Console.WriteLine("Example: Hikari.exe /script ScriptFile.hikari /u DenkOr");
-            Console.WriteLine("\tThis example usage will run drive mapping resolution of AD account DenkOr against ScriptFile.script");
+            Console.WriteLine("\tThis example usage will run drive mapping resolution of AD account DenkOr against ScriptFile.hikari");
             Console.WriteLine("\tand will display resolved drives and network location for each of them.");
             Console.WriteLine();
-            Console.WriteLine("Example: Hikari.exe /script ScriptFile.script");
+            Console.WriteLine("Example: Hikari.exe /script ScriptFile.hikari");
             Console.WriteLine("\tThis example usage will resolve and connect drive mappings for the current user.");
             Console.WriteLine();
             Console.WriteLine("\tIf user argument is present no network mapping will occur.");
@@ -378,7 +378,5 @@ namespace HikariLex
             }
             Console.WriteLine();
         }
-
-
     }
 }
