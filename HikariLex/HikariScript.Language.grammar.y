@@ -47,7 +47,7 @@ main		: // empty script || home drive || drives mapped to all || block of drives
 			;
 
 home		: // empty script or block of drives
-			| HOME DRIVELETTER ASSIGN UNC					{ AddDrive($2.drive, "HOME", $4.unc); }
+			| HOME DRIVELETTER ASSIGN UNC					{ AddHomeDrive($2.drive, $4.unc); }
 			;
 
 all			: // null or one or more 
