@@ -41,6 +41,8 @@ namespace HikariLex
         // ExpressionUNC tuple stack
         private Queue<Tuple<string, string>> queue;
 
+        public string UserName { get; set; }
+
         public HikariModel Model { get; set; }
 
         public HikariScriptParser(IEnumerable<string> Groups) : base(null)
@@ -73,13 +75,14 @@ namespace HikariLex
 
         public bool IsMemberOf(string group)
         {
+            group = StripQuotes(group);
+
             if (string.IsNullOrWhiteSpace(group))
             {
-                log.Error("Group is empty string!");
+                log.Error("Group is empty!");
                 return false;
             }
 
-            group = StripQuotes(group);
             bool result = groups.Contains(group.ToUpperInvariant());
             return result;
         }
@@ -87,10 +90,37 @@ namespace HikariLex
         public void AddDrive(string Drive, string Expression, string UNC)
         {
             UNC = StripQuotes(UNC);
-            if (Model == null)
+            if (string.IsNullOrWhiteSpace(UNC))
+            {
+                log.Error($"UNC path provided for HOME drive is empty! Drive {Drive} for [{Expression} = {UNC}] skipped!");
                 return;
-
+            }
             Model.AddDriveExpressionUNC(Drive, Expression, UNC);
+        }
+
+        public void AddHomeDrive(string Drive, string UNC)
+        {
+            if (string.IsNullOrWhiteSpace(UserName))
+            {
+                log.Error($"User name (SamAccountName) is not set. Home drive skipped!");
+                return;
+            }
+
+            UNC = StripQuotes(UNC);
+
+            if (string.IsNullOrWhiteSpace(UNC))
+            {
+                log.Error("UNC path provided for HOME drive is empty! Home drive skipped!");
+                return;
+            }
+
+            if (UNC[UNC.Length - 1] != '\\')
+            {
+                UNC += '\\';
+            }
+
+            UNC = $"{StripQuotes(UNC)}{UserName}";
+            Model.AddDriveExpressionUNC(Drive, "HOME", UNC);
         }
 
         public void Parse(string s)
