@@ -2,6 +2,7 @@
 
 - Content
     - [Download](#download)
+    - [History](#history)
     - [What is Hikari?](#what-is-hikari)
     - [Why?](#why?)
     - [Used NuGet packages and sources](#used-nuget-packages-and-sources)
@@ -18,6 +19,12 @@
 
 ## Download
 Download [lates release from here](https://github.com/NoenDex/Hikari/releases/).
+
+## History
+- 18MAR2020 
+    - Implemented CONTAINS directive.
+    - NOT and CONTAINS must enclose expression(s) in ().
+    - Example updated to accomodate the changes.
 
 ## What is Hikari?
 Hikari (ひかり) is Japanese word for "Light". There is no particular reason why I chose it.
@@ -76,7 +83,7 @@ _Real-life example_:
 
 ## Features
 - Runs under current logon user credentials.
-- Boolean rules expressions (OR, AND, NOT)
+- Boolean rules expressions (OR, AND, NOT, CONTAINS)
 - [Drive rules](#drive-rule)
 - Built-in [HOME](#home-directive) drive directive.
 - Built-in [ALL](#all-directive) drive(s) directive.
@@ -108,7 +115,7 @@ E: {
     // "GROUP 1" members -> "\\SERVER2\MapForGroup1"
     "GROUP 1" = "\\SERVER2\MapForGroup1"
     "ADGROUP TEST" = "\\SERVER7\TestFolder"
-    "DOMAIN USERS" AND NOT "TEST USERS" = "\\SERVER\Folder4"
+    "DOMAIN USERS" AND NOT ("TEST USERS") = "\\SERVER\Folder4"
 }
 
 F: {
@@ -117,7 +124,12 @@ F: {
 
 G: {
     // Using brackets is fine :-)
-    "Group 3" OR ("Group6" AND NOT "Test users") = "\\SomeServer\Share"
+    "Group 3" OR ("Group6" AND NOT ("Test users")) = "\\SomeServer\Share"
+}
+
+M: {
+    // All groups containing "Management" in their name will have the UNC mapped as M:
+    CONTAINS ("Management") = "\\SERVER\AllManagers"
 }
 
 R: {
@@ -156,7 +168,7 @@ _SYNTAX_:
 #### Boolean conditions
 _SYNTAX_:
 ```
-"<AD GROUP NAME1>" [[OR|AND] [[NOT] "<AD GROUP NAME2>" ...]
+"<AD GROUP NAME1>" [[OR|AND] [[NOT|CONTAINS] ("<AD GROUP NAME2>") ...]
 ```
 Expressions between '[' ']' are optional
 #### UNC path
