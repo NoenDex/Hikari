@@ -62,7 +62,7 @@ drives		: drive
 			| drives drive
 			;
 
-drive		: DRIVELETTER BLOCKOPEN conditions BLOCKCLOSE	{ { $$.result = $3.result; PopUNCs($1.drive); } }
+drive		: DRIVELETTER BLOCKOPEN conditions BLOCKCLOSE	{ $$.result = $3.result; PopUNCs($1.drive); }
 			;
 
 conditions	: condition										
@@ -72,22 +72,24 @@ conditions	: condition
 condition	: expressions ASSIGN UNC						{  if($1.result) PushUNC($1.s, $3.unc); }
 			;
 
-expressions	: term											
-			| expressions term								
+expressions	: orexp
+			| OPEN_BRACKET orexp CLOSE_BRACKET				{ $$.result = $2.result; $$.s = $2.s; }
+			| expressions orexp
 			;
 
-term		: factor										
-			| NOT OPEN_BRACKET term CLOSE_BRACKET			{ $$.result = !$2.result; $$.s = "NOT( " + $2.s + ")"; }
-			| CONTAINS OPEN_BRACKET term CLOSE_BRACKET		{ $$.result = Contains($3.s); $$.s = "CONTAINS( " + $3.s + ")"; }
-			| term OR term									{ $$.result = $1.result || $3.result; $$.s = $1.s + " OR " + $3.s; }
-			| term AND term									{ $$.result = $1.result && $3.result; $$.s = $1.s + " AND " + $3.s; }
+orexp		: andexp
+			| orexp OR andexp								{ $$.result = $1.result || $3.result; $$.s = "(" + $1.s + " OR " + $3.s + ")"; }
+			| OPEN_BRACKET orexp OR andexp CLOSE_BRACKET	{ $$.result = $2.result || $4.result; $$.s = "(" + $2.s + " OR " + $4.s + ")"; }
 			;
 
-factor		: group											{ $$.result = $1.result; $$.s = $1.s; }
-			| OPEN_BRACKET expressions CLOSE_BRACKET		{ $$.result = $2.result; $$.s = "(" + $2.s + ")"; }
+andexp		: group											{ $$.result = $1.result; $$.s = $1.s; }
+			| andexp AND group								{ $$.result = $1.result && $3.result; $$.s = "(" + $1.s + " AND " + $3.s + ")"; }
+			| OPEN_BRACKET andexp AND group CLOSE_BRACKET	{ $$.result = $2.result && $4.result; $$.s = "(" + $2.s + " AND " + $4.s + ")"; }
+			| NOT OPEN_BRACKET andexp CLOSE_BRACKET			{ $$.result = !$3.result; $$.s = "NOT(" + $3.s + ")"; }
 			;
 
 group		: GROUP											{ $$.result = IsMemberOf($1.s); $$.s = $1.s; }
+			| CONTAINS OPEN_BRACKET GROUP CLOSE_BRACKET		{ $$.result = Contains($3.s); $$.s = "CONTAINS(" + $3.s + ")"; }
 			;
 
 %%
