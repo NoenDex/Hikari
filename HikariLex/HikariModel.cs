@@ -27,6 +27,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 using NLog;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 
 namespace HikariLex
@@ -35,10 +36,12 @@ namespace HikariLex
     {
         private static readonly Logger log = LogManager.GetLogger("Model");
         public Dictionary<string, List<Tuple<string, string>>> Drives { get; }
+        public List<Tuple<string, string>> Printers { get; }
 
         public HikariModel()
         {
             Drives = new Dictionary<string, List<Tuple<string, string>>>();
+            Printers = new List<Tuple<string, string>>();
         }
 
         public void AddDriveExpressionUNC(string Drive, string Expression, string UNC)
@@ -51,6 +54,13 @@ namespace HikariLex
             {
                 Drives.Add(Drive, new List<Tuple<string, string>>() { new Tuple<string, string>(Expression, UNC) });
             }
+        }
+
+        public void AddPrinterUNC(string Expression, string UNC)
+        {
+            if (Printers.FirstOrDefault(p => p.Item2.Equals(UNC, StringComparison.InvariantCultureIgnoreCase)) != null)
+                return;
+            Printers.Add(new Tuple<string, string>(Expression, UNC));
         }
 
         /// <summary>
@@ -122,13 +132,22 @@ namespace HikariLex
         public override string ToString()
         {
             StringBuilder sb = new StringBuilder();
+            sb.AppendLine("\n Network drives:");
             foreach (var item in Drives)
             {
-                sb.AppendLine();
                 sb.AppendLine($" {item.Key}");
                 foreach (Tuple<string, string> val in item.Value)
                 {
                     sb.AppendLine($"  {val.Item1} = \"{val.Item2}\"");
+                }
+            }
+
+            if (Printers.Count > 0)
+            {
+                sb.AppendLine("\n Printers:");
+                foreach (var item in Printers)
+                {
+                    sb.AppendLine($" {item.Item1} = \"{item.Item2}\"");
                 }
             }
             return sb.ToString();

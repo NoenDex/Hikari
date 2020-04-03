@@ -38,7 +38,6 @@ namespace HikariLex
 
         private IEnumerable<string> groups;
 
-        // ExpressionUNC tuple stack
         private Queue<Tuple<string, string>> queue;
 
         public string UserName { get; set; }
@@ -55,7 +54,7 @@ namespace HikariLex
             queue.Enqueue(new Tuple<string, string>(Groups, StripQuotes(UNC)));
         }
 
-        public void PopUNCs(string DriveLetter)
+        public void PopDriveUNCs(string DriveLetter)
         {
             while (queue.Count > 0)
             {
@@ -63,6 +62,17 @@ namespace HikariLex
                 string expression = tuple.Item1;
                 string unc = tuple.Item2;
                 Model.AddDriveExpressionUNC(DriveLetter, expression, unc);
+            }
+        }
+
+        public void PopPrinterUNCs()
+        {
+            while (queue.Count > 0)
+            {
+                Tuple<string, string> tuple = queue.Dequeue();
+                string expression = tuple.Item1;
+                string unc = tuple.Item2;
+                Model.AddPrinterUNC(expression, unc);
             }
         }
 

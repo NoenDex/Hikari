@@ -50,6 +50,7 @@ AndOp			[Aa][Nn][Dd]
 Group			\"([^\"][A-Za-z0-9_\. \-&]*)\"
 UNC				\"([^\"][\\\\][A-Za-z0-9_\.\\ \-&]*\$?)\"
 ContainsOp      [Cc][Oo][Nn][Tt][Aa][Ii][Nn][Ss]
+Printer         [Pp][Rr][Ii][Nn][Tt][Ee][Rr]:
 
 %{
 
@@ -72,6 +73,7 @@ ContainsOp      [Cc][Oo][Nn][Tt][Aa][Ii][Nn][Ss]
 {HomeOp}		{ return (int)Token.HOME; }
 {AllOp}			{ return (int)Token.ALL; }
 {ContainsOp}    { return (int)Token.CONTAINS; }
+{Printer}       { return (int)Token.PRINTER; }
 
 "/*"					{ BEGIN(C_BLOCKCOMMENT); }
 <C_BLOCKCOMMENT>"*/"	{ BEGIN(INITIAL); }
@@ -83,6 +85,6 @@ ContainsOp      [Cc][Oo][Nn][Tt][Aa][Ii][Nn][Ss]
 <COMMENT_SINGLE>[^\n]+  { }
 
 {CR}			{}
-{Space}+		{} /* skip */
+{Space}		{} /* skip */
 .               { FlagError(); } /* anything else */
 %%

@@ -38,12 +38,12 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 %start main
 
-%token OPEN_BRACKET, CLOSE_BRACKET, BLOCKOPEN, BLOCKCLOSE, DRIVELETTER, ASSIGN, OR, AND, GROUP, UNC, NOT, HOME, ALL, CONTAINS
+%token OPEN_BRACKET, CLOSE_BRACKET, BLOCKOPEN, BLOCKCLOSE, DRIVELETTER, ASSIGN, OR, AND, GROUP, UNC, NOT, HOME, ALL, CONTAINS, PRINTER
 
 %%
 
 main		: // empty script || home drive || drives mapped to all || block of drives
-			| home all drives
+			| home all drives printer
 			;
 
 home		: // empty script or block of drives
@@ -62,7 +62,11 @@ drives		: drive
 			| drives drive
 			;
 
-drive		: DRIVELETTER BLOCKOPEN conditions BLOCKCLOSE	{ $$.result = $3.result; PopUNCs($1.drive); }
+drive		: DRIVELETTER BLOCKOPEN conditions BLOCKCLOSE	{ $$.result = $3.result; PopDriveUNCs($1.drive); }
+			;
+
+printer		:
+			| PRINTER BLOCKOPEN conditions BLOCKCLOSE		{ $$.result = $3.result; PopPrinterUNCs(); }
 			;
 
 conditions	: condition										

@@ -57,13 +57,15 @@ namespace HikariLex
         private static bool hideConsole = false;
 
         private const int SW_HIDE = 0;
-        private const int SW_SHOW = 5;
 
         [DllImport("kernel32.dll")]
         static extern IntPtr GetConsoleWindow();
 
         [DllImport("user32.dll")]
         static extern bool ShowWindow(IntPtr hWnd, int nCmdShow);
+
+        [DllImport("winspool.drv", CharSet = CharSet.Unicode)]
+        public static extern bool AddPrinterConnection(string pName);
 
         static int Main(string[] args)
         {
@@ -208,6 +210,7 @@ namespace HikariLex
             {
                 DisconnectAllLocalNetworkDrives();
                 ConnectNetworkDrives(parser.Model);
+                ConnectNetworkPrinters(parser.Model);
             }
 
             stopwatch.Stop();
@@ -305,7 +308,7 @@ namespace HikariLex
             log.Info("Connecting network drives...");
             Console.WriteLine();
             bool success = true;
-            Forker forker = new Forker();
+            Forker driveForker = new Forker();
 
             foreach (var drive in model.Drives)
             {
@@ -313,7 +316,7 @@ namespace HikariLex
                 string DriveLetter = drive.Key;
                 string expression = exp_unc.Item1;
                 string unc = exp_unc.Item2;
-                forker.Fork(delegate
+                driveForker.Fork(delegate
                 {
                     if (!Directory.Exists(unc))
                     {
@@ -329,14 +332,45 @@ namespace HikariLex
                             success = false;
                         } else
                         {
-                            log.Info($"{DriveLetter} -> \"{unc}\" [{expression}] connected.");
+                            log.Info($"{DriveLetter} -> \"{unc}\" [{expression}]");
                         }
                     }
                 });
             }
 
-            forker.Join();
+            driveForker.Join();
 
+            return success;
+        }
+
+        private static bool ConnectNetworkPrinters(HikariModel model)
+        {
+            if (model.Printers.Count == 0)
+                return true;
+
+            Console.WriteLine();
+            log.Info("Connecting network printers...");
+            Console.WriteLine();
+
+            bool success = true;
+            Forker printerForker = new Forker();
+            foreach (Tuple<string, string> printer in model.Printers)
+            {
+                printerForker.Fork(delegate
+                {
+                    if (!AddPrinterConnection(printer.Item2))
+                    {
+                        log.Error($"Error connecting network printer \"{printer.Item2}\"");
+                        success = false;
+                    }
+                    else
+                    {
+                        log.Info($"[{printer.Item1}] -> \"{printer.Item2}\"");
+                    }
+                });
+            }
+
+            printerForker.Join();
             return success;
         }
 
