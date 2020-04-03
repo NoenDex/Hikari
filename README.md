@@ -21,6 +21,9 @@
 Download [lates release from here](https://github.com/NoenDex/Hikari/releases/).
 
 ## History
+- 03APR2020
+    - Implemented PRINTER: block
+    - Updated example to show PRINTER: usage
 - 18MAR2020 
     - Implemented CONTAINS directive.
     - NOT and CONTAINS must enclose expression(s) in ().
@@ -84,7 +87,8 @@ _Real-life example_:
 ## Features
 - Runs under current logon user credentials.
 - Boolean rules expressions (OR, AND, NOT, CONTAINS)
-- [Drive rules](#drive-rule)
+- [DRIVE rules](#drive-rule)
+- Optional [PRINTER rules](#printer-rule)
 - Built-in [HOME](#home-directive) drive directive.
 - Built-in [ALL](#all-directive) drive(s) directive.
 - [Automatic conflict resolution](#automatic-conflict-resolution) of duplicated drive mappings.
@@ -146,6 +150,11 @@ Y: {
     // $ shares are supported also
     "System admins" = "\\StorageServer\D$"
 }
+
+PRINTER: {
+    "Accounting" = "\\PRINTServer\\Printer_1"
+    "HR" AND "Management" = "\\PRINTServer\SharedPrinter 2"
+}
 ```
 ## Administrator's test example
 ```
@@ -157,6 +166,13 @@ Takes AD group membership of UserTe and runs it against the rules described in n
 _SYNTAX_:
 ```
 <DRIVE LETTER>: { 
+    <BLOCK OF EXPERSSIONS = UNC PATH>
+}
+```
+#### Printer rule:
+_SYNTAX_:
+```
+PRINTER: { 
     <BLOCK OF EXPERSSIONS = UNC PATH>
 }
 ```
