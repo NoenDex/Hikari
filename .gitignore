@@ -9,3 +9,5 @@ db.lock
 storage.ide
 HikariScript.Scanner.Generated.cs
 HikariScript.Parser.Generated.cs
+*.code-workspace
+.vscode
