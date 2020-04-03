@@ -151,8 +151,8 @@
     </Exec>
   </Target>
   <PropertyGroup>
-    <PostBuildEvent>cd $(OutDir)
-del Hikari*.zip
-"C:\Program Files\7-Zip\7z.exe" -tzip -saa a $(SolutionName)_Release_v1.0.7384 *.dll *.exe *.xsd NLog.config</PostBuildEvent>
+    <PostBuildEvent>rem cd $(OutDir)
+rem del Hikari*.zip
+rem "C:\Program Files\7-Zip\7z.exe" -tzip -saa a $(SolutionName)_Release_v1.0.7384 *.dll *.exe *.xsd NLog.config</PostBuildEvent>
   </PropertyGroup>
 </Project>
