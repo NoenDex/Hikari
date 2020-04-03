@@ -11,3 +11,4 @@ HikariScript.Scanner.Generated.cs
 HikariScript.Parser.Generated.cs
 *.code-workspace
 .vscode
+*.bat
