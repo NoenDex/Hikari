@@ -1,0 +1,81 @@
+%YAML 1.2
+---
+# See http://www.sublimetext.com/docs/3/syntax.html
+file_extensions:
+  - hikari
+scope: source.hikari
+
+contexts:
+  prototype:
+    - include: comments
+
+  main:
+    - include: drive
+    - include: keywords
+    - include: operators
+    - include: unc
+    - include: group
+    - include: nbrackets
+    - include: cbrackets
+
+  keywords:
+    - match: '\b(HOME|ALL|PRINTER)\b'
+      scope: keyword.declaration.hikari
+
+  operators:
+    - match: '\b(OR|AND|CONTAINS)\b'
+      scope: keyword.operator.hikari
+
+  drive:
+    - match: '[D-Zd-z]\:'
+      scope: keyword.declaration.hikari
+
+  unc:
+    - meta_scope: string.quoted.double.unc.hikari
+    - match: '"([^"][\\\\][A-Za-z0-9_\.\\ \-&]*\$?)"'
+      scope: constant.character.escape.hikari
+
+  group:
+    - meta_scope: string.quoted.double.group.hikari
+    - match: '"([^"][A-Za-z0-9_\.\\ \-&]*\$?)"'
+      scope: constant.character.escape.hikari
+
+  nbrackets:
+    - match: \(
+      push: nout_brackets
+    - match: \)
+      scope: invalid.illegal.stray-bracket-end
+
+  nout_brackets:
+    - match: \)
+      pop: true
+    - include: main
+
+  cbrackets:
+    - match: \{
+      push: cout_brackets
+    - match: \}
+      scope: invalid.illegal.stray-bracket-end
+
+  cout_brackets:
+    - match: \}
+      pop: true
+    - include: main
+
+  comments:
+    # Comments begin with a '//' and finish at the end of the line.
+    - match: '//'
+      scope: punctuation.definition.comment.hikari
+      push:
+        # This is an anonymous context push for brevity.
+        - meta_scope: comment.line.double-slash.hikari
+        - match: $\n?
+          pop: true
+    # Comments begin with a '/*' and finish at '*/'
+    - match: '/\*'
+      scope: punctuation.definition.comment.hikari
+      push:
+        # This is an anonymous context push for brevity.
+        - meta_scope: comment.line.double-slash.hikari
+        - match: \*/?
+          pop: true
