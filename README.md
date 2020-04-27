@@ -8,7 +8,6 @@
     - [Used NuGet packages and sources](#used-nuget-packages-and-sources)
     - [Running Hikari](#running-hikari)
     - [Features](#features)
-    - [Planned features](#planned-features)
     - [Advantages](#advantages)
     - [Small example](#small-example)
     - [Administrator's test example](#administrators-test-example)
@@ -21,6 +20,8 @@
 Download [lates release from here](https://github.com/NoenDex/Hikari/releases/).
 
 ## History
+- 27APR2020
+    - Drive and Printer blocks could be empty, i.e. no UNC expressions between '{' and '}'
 - 03APR2020
     - Implemented PRINTER: block
     - Updated example to show PRINTER: usage
@@ -96,8 +97,6 @@ _Real-life example_:
 - C-style line and block comments
 - Requires .NET 4.5
 - Built to run fast!
-## Planned features
-- Network printer support based on group membership
 ## Advantages
 - Single script file for the entire Active Directory domain
 - Single GPO required.
