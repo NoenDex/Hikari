@@ -44,6 +44,7 @@ namespace HikariLex
         public string UserName { get; set; }
         public bool ShowAlert { get; set; }
         public bool HideConsole { get; set; }
+        public bool ShowBuildVersion { get; set; }
     }
 
     class Program
@@ -55,6 +56,7 @@ namespace HikariLex
         private static bool doMapping = true;
         private static bool showUserAlert = false;
         private static bool hideConsole = false;
+        private static bool showBuildVersion = false;
 
         private const int SW_HIDE = 0;
 
@@ -75,14 +77,22 @@ namespace HikariLex
             stopwatch.Start();
 
             string version = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version.ToString();
-            log.Info("");
-            log.Info("Hikari V{0} - created by Stefan Bazelkov", version);
+            
 
             var p = new FluentCommandLineParser<AppArguments>();
 
+            p.Setup(arg => arg.ShowBuildVersion)
+                .As('v', "version")
+                .Callback(arg => {
+                    showBuildVersion = arg;
+                    log.Info(version);
+                })
+                .SetDefault(false)
+                .WithDescription("Show build version");
+
             p.Setup(arg => arg.ScriptFile)
                 .As('s', "script")
-                .Required()
+                //.Required()
                 .WithDescription("Script file.");
 
             p.Setup(arg => arg.UserName)
@@ -106,6 +116,12 @@ namespace HikariLex
 
             var result = p.Parse(args);
 
+            if (showBuildVersion)
+                return 0;
+
+            log.Info("");
+            log.Info("Hikari V{0} - created by Stefan Bazelkov", version);
+
             if (result.HelpCalled)
             {
                 stopwatch.Stop();
@@ -128,7 +144,7 @@ namespace HikariLex
                 log.Info("Time elapsed: {0:00.00}s", stopwatch.Elapsed.TotalSeconds);
                 ShowUserAlert("Command line arguments parsing failed!");
                 return -1;
-            }
+            }            
 
             if (hideConsole)
             {
