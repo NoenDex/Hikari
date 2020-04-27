@@ -69,7 +69,8 @@ printer		:
 			| PRINTER BLOCKOPEN conditions BLOCKCLOSE		{ $$.result = $3.result; PopPrinterUNCs(); }
 			;
 
-conditions	: condition										
+conditions	: 
+			| condition										
 			| conditions condition							
 			;
 
