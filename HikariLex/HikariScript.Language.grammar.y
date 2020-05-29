@@ -78,24 +78,30 @@ condition	: expressions ASSIGN UNC						    { if($1.result) PushUNC($1.s, $3.unc
 			;
 
 expressions	: notexp
-			| OPEN_BRACKET notexp CLOSE_BRACKET				    { $$.result = $2.result; $$.s = $2.s; }
+			| OPEN_BRACKET expressions CLOSE_BRACKET		    { $$.result = $2.result; $$.s = $2.s; }
 			;
 
 notexp		: orexp
-			| NOT OPEN_BRACKET orexp CLOSE_BRACKET              { $$.result = !$3.result; $$.s = "NOT(" + $3.s + ")"; }
+			| NOT OPEN_BRACKET group CLOSE_BRACKET		         { $$.result = !$3.result; $$.s = "NOT(" + $3.s + ")"; }
+			| NOT OPEN_BRACKET expressions CLOSE_BRACKET         { $$.result = !$3.result; $$.s = "NOT(" + $3.s + ")"; }
 			;
 
 orexp		: andexp
+			| orexp OR orexp									{ $$.result = $1.result || $3.result; $$.s = "(" + $1.s + " OR " + $3.s + ")"; }
 			| orexp OR expressions								{ $$.result = $1.result || $3.result; $$.s = "(" + $1.s + " OR " + $3.s + ")"; }
-			| OPEN_BRACKET orexp OR expressions CLOSE_BRACKET	{ $$.result = $2.result || $4.result; $$.s = "(" + $2.s + " OR " + $4.s + ")"; }
+			| expressions OR orexp								{ $$.result = $1.result || $3.result; $$.s = "(" + $1.s + " OR " + $3.s + ")"; }
+			| expressions OR expressions						{ $$.result = $1.result || $3.result; $$.s = "(" + $1.s + " OR " + $3.s + ")"; }
 			;
 
-andexp		: group 										    { $$.result = $1.result; $$.s = $1.s; }
+andexp		: group 											{ $$.result = $1.result; $$.s = $1.s; }
+			| andexp AND andexp									{ $$.result = $1.result && $3.result; $$.s = "(" + $1.s + " AND " + $3.s + ")"; }
 			| andexp AND expressions							{ $$.result = $1.result && $3.result; $$.s = "(" + $1.s + " AND " + $3.s + ")"; }
-			| OPEN_BRACKET andexp AND expressions CLOSE_BRACKET	{ $$.result = $2.result && $4.result; $$.s = "(" + $2.s + " AND " + $4.s + ")"; }
+			| expressions AND andexp							{ $$.result = $1.result && $3.result; $$.s = "(" + $1.s + " AND " + $3.s + ")"; }
+			| expressions AND expressions						{ $$.result = $1.result && $3.result; $$.s = "(" + $1.s + " AND " + $3.s + ")"; }
 			;
 
 group		: GROUP											    { $$.result = IsMemberOf($1.s); $$.s = $1.s; }
+			| OPEN_BRACKET GROUP CLOSE_BRACKET					{ $$.result = IsMemberOf($1.s); $$.s = $1.s; }
 			| CONTAINS OPEN_BRACKET GROUP CLOSE_BRACKET		    { $$.result = Contains($3.s); $$.s = "CONTAINS(" + $3.s + ")"; }
 			;
 
