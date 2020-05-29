@@ -23,7 +23,7 @@ contexts:
       scope: keyword.declaration.hikari
 
   operators:
-    - match: '\b(OR|AND|CONTAINS)\b'
+    - match: '\b(OR|AND|CONTAINS|NOT)\b'
       scope: keyword.operator.hikari
 
   drive:
