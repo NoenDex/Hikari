@@ -26,6 +26,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 using Fclp;
 using NLog;
+using NLog.Config;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -71,21 +72,32 @@ namespace HikariLex
 
         static int Main(string[] args)
         {
+            LoggingConfiguration config = LogManager.Configuration;
+            if (config == null)
+            {
+                Console.WriteLine("\n~~~~~~~~~~~ Failed to get log configuration ~~~~~~~~~~~\n");
+                return -99;
+            }
+            LoggingRule fileRule = config.FindRuleByName("file rule");
+            LoggingRule consoleRule = config.FindRuleByName("console rule");
+
+            fileRule.DisableLoggingForLevels(LogLevel.Info, LogLevel.Fatal);
+            LogManager.Configuration = config;
+
             string script = string.Empty;
 
             Stopwatch stopwatch = new Stopwatch();
             stopwatch.Start();
 
             string version = System.Reflection.Assembly.GetExecutingAssembly().GetName().Version.ToString();
-            
 
             var p = new FluentCommandLineParser<AppArguments>();
 
             p.Setup(arg => arg.ShowBuildVersion)
                 .As('v', "version")
-                .Callback(arg => {
+                .Callback(arg =>
+                {
                     showBuildVersion = arg;
-                    log.Info(version);
                 })
                 .SetDefault(false)
                 .WithDescription("Show build version");
@@ -117,7 +129,10 @@ namespace HikariLex
             var result = p.Parse(args);
 
             if (showBuildVersion)
+            {
+                log.Info(version);
                 return 0;
+            }
 
             log.Info("");
             log.Info("Hikari V{0} - created by Stefan Bazelkov", version);
@@ -144,10 +159,12 @@ namespace HikariLex
                 log.Info("Time elapsed: {0:00.00}s", stopwatch.Elapsed.TotalSeconds);
                 ShowUserAlert("Command line arguments parsing failed!");
                 return -1;
-            }            
+            }
 
             if (hideConsole)
             {
+                // do not show log if console is hidden
+                consoleRule.DisableLoggingForLevels(LogLevel.Trace, LogLevel.Fatal);
                 ShowWindow(GetConsoleWindow(), SW_HIDE);
                 log.Info("Start with console window hidden.");
             }
@@ -185,6 +202,9 @@ namespace HikariLex
             }
             else
             {
+                // logging will be performed only in the console
+                fileRule.EnableLoggingForLevels(LogLevel.Info, LogLevel.Fatal);
+                LogManager.Configuration = config;
                 doMapping = true;
                 user = UserPrincipal.Current;
                 DisconnectAllLocalNetworkDrives();
@@ -346,7 +366,8 @@ namespace HikariLex
                         {
                             log.Error($"Network drive {DriveLetter} -> \"{unc}\" ERROR: {result}");
                             success = false;
-                        } else
+                        }
+                        else
                         {
                             log.Info($"{DriveLetter} -> \"{unc}\" [{expression}]");
                         }
