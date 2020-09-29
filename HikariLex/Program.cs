@@ -129,7 +129,7 @@ namespace HikariLex
                 .As('f', "first")
                 .Callback(arg => getFirstAvailableLetter = arg)
                 .SetDefault(false)
-                .WithDescription("Resolve drive letter conflict to first available. Default: FALSE (Resolve to next availbale drive letter)");
+                .WithDescription("Resolve drive letter conflict to first available. Default: FALSE (Resolve to next available drive letter)");
 
             p.SetupHelp("?", "help")
                 .Callback(text => Console.WriteLine(text));
