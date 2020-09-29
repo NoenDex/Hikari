@@ -44,8 +44,28 @@ namespace HikariLex
             Printers = new List<Tuple<string, string>>();
         }
 
+        private string DrivesContainUNC(string UNC)
+        {
+            foreach (var driveLetter in Drives.OrderBy(d => d.Key))
+            {
+                foreach (Tuple<string, string> val in driveLetter.Value)
+                {
+                    if (val.Item2.Equals(UNC, StringComparison.OrdinalIgnoreCase))
+                        return driveLetter.Key;
+                }
+            }
+            return string.Empty;
+        }
+
         public void AddDriveExpressionUNC(string Drive, string Expression, string UNC)
         {
+            string driveLetterContainingUNC = DrivesContainUNC(UNC);
+            if (!string.IsNullOrEmpty(driveLetterContainingUNC))
+            {
+                log.Warn($"Skip: \"{UNC}\" - already in \"{driveLetterContainingUNC}\" drive mapping");
+                return;
+            }
+
             if (Drives.ContainsKey(Drive))
             {
                 Drives[Drive].Add(new Tuple<string, string>(Expression, UNC));
@@ -67,7 +87,7 @@ namespace HikariLex
         /// Emergency reduce all drives to just 1st UNC path
         /// Used in case conflicts could not be resolved
         /// </summary>
-        public void ReduceUNCs()
+        public void EmergencyReduceUNCs()
         {
             foreach (var item in Drives)
             {
@@ -133,7 +153,7 @@ namespace HikariLex
         {
             StringBuilder sb = new StringBuilder();
             sb.AppendLine("\n Network drives:");
-            foreach (var item in Drives)
+            foreach (var item in Drives.OrderBy(d => d.Key))
             {
                 sb.AppendLine($" {item.Key}");
                 foreach (Tuple<string, string> val in item.Value)
