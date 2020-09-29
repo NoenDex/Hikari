@@ -34,7 +34,6 @@ using System.DirectoryServices.AccountManagement;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 
 namespace HikariLex
@@ -46,6 +45,7 @@ namespace HikariLex
         public bool ShowAlert { get; set; }
         public bool HideConsole { get; set; }
         public bool ShowBuildVersion { get; set; }
+        public bool GetFirstAvailableLetter { get; set; }
     }
 
     class Program
@@ -58,6 +58,8 @@ namespace HikariLex
         private static bool showUserAlert = false;
         private static bool hideConsole = false;
         private static bool showBuildVersion = false;
+        private static bool getFirstAvailableLetter = true;
+        private static Queue<string> unused;
 
         private const int SW_HIDE = 0;
 
@@ -115,13 +117,19 @@ namespace HikariLex
                 .As('a', "alert")
                 .Callback(arg => showUserAlert = arg)
                 .SetDefault(false)
-                .WithDescription("Notify the user if error. DEFAULT: False");
+                .WithDescription("Notify the user if error. Default: FALSE (Don't notify)");
 
             p.Setup(arg => arg.HideConsole)
                 .As('h', "hide")
                 .Callback(arg => hideConsole = arg)
                 .SetDefault(false)
-                .WithDescription("Hide console window during execution. DEFAULT: False");
+                .WithDescription("Hide console window during execution. Default: FALSE (Don't hide console)");
+
+            p.Setup(arg => arg.GetFirstAvailableLetter)
+                .As('f', "first")
+                .Callback(arg => getFirstAvailableLetter = arg)
+                .SetDefault(false)
+                .WithDescription("Resolve drive letter conflict to first available. Default: FALSE (Resolve to next availbale drive letter)");
 
             p.SetupHelp("?", "help")
                 .Callback(text => Console.WriteLine(text));
@@ -257,6 +265,38 @@ namespace HikariLex
             return 0;
         }
 
+        private static string NextDriveLetter(string DriveLetter)
+        {
+            if (string.IsNullOrWhiteSpace(DriveLetter) || unused.Count() == 0 || DriveLetter.Length < 2)
+                return string.Empty;
+
+            char letter = DriveLetter[0];
+
+            // embarrassing conversion to List
+            List<string> unused_list = unused.ToList();
+
+            while (true)
+            {
+                letter = (char)(letter + 1);
+
+                if (letter > 'Z')
+                    break;
+
+                string nextDriveLetter = $"{letter}:";
+
+                int index = unused_list.IndexOf(nextDriveLetter);
+                if (index > -1)
+                {
+                    unused_list.RemoveAt(index);
+                    // embarrassing conversion back to Queue
+                    unused = new Queue<string>(unused_list);
+                    return nextDriveLetter;
+                }
+            }
+
+            return string.Empty;
+        }
+
         public static void ResolveMappings(HikariModel model)
         {
             uint totalConflicts = model.TotalConflicts();
@@ -271,13 +311,14 @@ namespace HikariLex
             Console.WriteLine();
             // A, B and C are taken for sure! =)
             List<string> alpha = "DEFGHIJKLMNOPQRSTUVWXYZ".ToCharArray().Select(c => c + ":").ToList();
+
             List<string> used = model.UsedDriveLetters();
 
             // Only in real-run exclude local drives other than A-C
             if (doMapping)
             {
                 // All local fixed drives & CD/DVD drives
-                List<string> localDrives = DriveInfo.GetDrives().ToList().Where(d => d.DriveType == DriveType.Fixed || d.DriveType == DriveType.CDRom).Select(d => d.Name.Substring(0, 2)).ToList();
+                List<string> localDrives = DriveInfo.GetDrives().ToList().Where(d => d.DriveType == DriveType.Fixed || d.DriveType == DriveType.CDRom).Select(d => d.Name.Substring(0, 2).ToUpper()).ToList();
                 // Add local fixed drives to used drives
                 used.AddRange(localDrives);
 
@@ -286,7 +327,7 @@ namespace HikariLex
             }
 
             // Generate unused drive letters queue out of all possible excluding used and local fixed drives
-            Queue<string> unused = new Queue<string>(alpha.Where(l => !used.Any(c => c == l)));
+            unused = new Queue<string>(alpha.Where(l => !used.Any(c => c == l)));
 
             // Try moving until resolved or no more available drives
             while (model.TotalConflicts() > 0 && unused.Count > 0)
@@ -294,16 +335,26 @@ namespace HikariLex
                 string drive = model.GetNextConflictDriveIndex();
                 if (!string.IsNullOrWhiteSpace(drive))
                 {
-                    // Pop 1st available
-                    string unusedDrive = unused.Dequeue();
-                    model.MoveFirstUNCConflict(drive, unusedDrive);
+                    if (!getFirstAvailableLetter)
+                    {
+                        // compute next drive letter
+                        string nextDrive = NextDriveLetter(drive);
+                        log.Info($"Next drive: \"{nextDrive}\"");
+                        model.MoveFirstUNCConflict(drive, nextDrive);
+                    }
+                    else
+                    {
+                        // Pop 1st available
+                        string unusedDrive = unused.Dequeue();
+                        model.MoveFirstUNCConflict(drive, unusedDrive);
+                    }
                 }
                 if (unused.Count == 0)
                 {
                     Console.WriteLine();
                     log.Warn("No more drive letters available!");
                     log.Warn("All unresolved drives will be reduced to the 1st UNC!");
-                    model.ReduceUNCs();
+                    model.EmergencyReduceUNCs();
                 }
             }
 
