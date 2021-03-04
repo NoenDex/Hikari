@@ -1669,7 +1669,11 @@
             with embedded ${}).
             </summary>
         </member>
+<<<<<<< HEAD:packages/NLog.4.7.8/lib/monoandroid44/NLog.xml
         <member name="M:NLog.Conditions.ConditionLayoutExpression.#ctor(NLog.Layouts.SimpleLayout)">
+=======
+        <member name="M:NLog.Conditions.ConditionLayoutExpression.#ctor(NLog.Layouts.Layout)">
+>>>>>>> 8ffe22f633377db00c677447971f28e646ef0707:packages/NLog.4.7.5/lib/monoandroid44/NLog.xml
             <summary>
             Initializes a new instance of the <see cref="T:NLog.Conditions.ConditionLayoutExpression" /> class.
             </summary>
@@ -1718,12 +1722,19 @@
             Condition literal expression (numeric, <b>LogLevel.XXX</b>, <b>true</b> or <b>false</b>).
             </summary>
         </member>
+<<<<<<< HEAD:packages/NLog.4.7.8/lib/monoandroid44/NLog.xml
         <member name="M:NLog.Conditions.ConditionLiteralExpression.#ctor(System.Object,System.String)">
+=======
+        <member name="M:NLog.Conditions.ConditionLiteralExpression.#ctor(System.Object)">
+>>>>>>> 8ffe22f633377db00c677447971f28e646ef0707:packages/NLog.4.7.5/lib/monoandroid44/NLog.xml
             <summary>
             Initializes a new instance of the <see cref="T:NLog.Conditions.ConditionLiteralExpression" /> class.
             </summary>
             <param name="literalValue">Literal value.</param>
+<<<<<<< HEAD:packages/NLog.4.7.8/lib/monoandroid44/NLog.xml
             <param name="toStringValue">ToString value.</param>
+=======
+>>>>>>> 8ffe22f633377db00c677447971f28e646ef0707:packages/NLog.4.7.5/lib/monoandroid44/NLog.xml
         </member>
         <member name="P:NLog.Conditions.ConditionLiteralExpression.LiteralValue">
             <summary>
@@ -3462,7 +3473,11 @@
             Get default file paths (including filename) for possible NLog config files. 
             </summary>
         </member>
+<<<<<<< HEAD:packages/NLog.4.7.8/lib/monoandroid44/NLog.xml
         <member name="M:NLog.Config.LoggingConfigurationFileLoader.GetAppSpecificNLogLocations(System.String,System.String)">
+=======
+        <member name="M:NLog.Config.LoggingConfigurationFileLoader.GetAppSpecificNLogLocations(System.String)">
+>>>>>>> 8ffe22f633377db00c677447971f28e646ef0707:packages/NLog.4.7.5/lib/monoandroid44/NLog.xml
             <summary>
             Get default file paths (including filename) for possible NLog config files. 
             </summary>
@@ -11379,11 +11394,14 @@
             Gets or sets whether to render innermost Exception from <see cref="M:System.Exception.GetBaseException"/>
             </summary>
         </member>
+<<<<<<< HEAD:packages/NLog.4.7.8/lib/monoandroid44/NLog.xml
         <member name="P:NLog.LayoutRenderers.ExceptionLayoutRenderer.FlattenException">
             <summary>
             Gets or sets whether to collapse exception tree using <see cref="M:System.AggregateException.Flatten"/>
             </summary>
         </member>
+=======
+>>>>>>> 8ffe22f633377db00c677447971f28e646ef0707:packages/NLog.4.7.5/lib/monoandroid44/NLog.xml
         <member name="P:NLog.LayoutRenderers.ExceptionLayoutRenderer.Formats">
             <summary>
              Gets the formats of the output of inner exceptions to be rendered in target.
@@ -14203,12 +14221,15 @@
             </summary>
             <docgen category='JSON Output' order='10' />
         </member>
+<<<<<<< HEAD:packages/NLog.4.7.8/lib/monoandroid44/NLog.xml
         <member name="P:NLog.Layouts.JsonLayout.ExcludeEmptyProperties">
             <summary>
             Gets or sets the option to exclude null/empty properties from the log event (as JSON)
             </summary>
             <docgen category='JSON Output' order='10' />
         </member>
+=======
+>>>>>>> 8ffe22f633377db00c677447971f28e646ef0707:packages/NLog.4.7.5/lib/monoandroid44/NLog.xml
         <member name="P:NLog.Layouts.JsonLayout.ExcludeProperties">
             <summary>
             List of property names to exclude when <see cref="P:NLog.Layouts.JsonLayout.IncludeAllProperties"/> is true
@@ -23491,7 +23512,11 @@
         </member>
         <member name="M:NLog.Targets.MailTarget.Write(NLog.Common.AsyncLogEventInfo)">
             <summary>
+<<<<<<< HEAD:packages/NLog.4.7.8/lib/monoandroid44/NLog.xml
             Writes async log event to the mail target.
+=======
+            Renders the logging event message and adds it to the internal ArrayList of log messages.
+>>>>>>> 8ffe22f633377db00c677447971f28e646ef0707:packages/NLog.4.7.5/lib/monoandroid44/NLog.xml
             </summary>
             <param name="logEvent">The logging event.</param>
         </member>
@@ -23507,7 +23532,11 @@
         </member>
         <member name="M:NLog.Targets.MailTarget.Write(System.Collections.Generic.IList{NLog.Common.AsyncLogEventInfo})">
             <summary>
+<<<<<<< HEAD:packages/NLog.4.7.8/lib/monoandroid44/NLog.xml
             Writes log events to the mail target.
+=======
+            Renders an array logging events.
+>>>>>>> 8ffe22f633377db00c677447971f28e646ef0707:packages/NLog.4.7.5/lib/monoandroid44/NLog.xml
             </summary>
             <param name="logEvents">Array of logging events.</param>
         </member>
@@ -23578,7 +23607,11 @@
         </member>
         <member name="T:NLog.Targets.MemoryTarget">
             <summary>
+<<<<<<< HEAD:packages/NLog.4.7.8/lib/monoandroid44/NLog.xml
             Writes log messages to <see cref="P:NLog.Targets.MemoryTarget.Logs"/> in memory for programmatic retrieval.
+=======
+            Writes log messages to an ArrayList in memory for programmatic retrieval.
+>>>>>>> 8ffe22f633377db00c677447971f28e646ef0707:packages/NLog.4.7.5/lib/monoandroid44/NLog.xml
             </summary>
             <seealso href="https://github.com/nlog/nlog/wiki/Memory-target">Documentation on NLog Wiki</seealso>
             <example>
@@ -23627,7 +23660,11 @@
         </member>
         <member name="M:NLog.Targets.MemoryTarget.Write(NLog.LogEventInfo)">
             <summary>
+<<<<<<< HEAD:packages/NLog.4.7.8/lib/monoandroid44/NLog.xml
             Renders the logging event message and adds to <see cref="P:NLog.Targets.MemoryTarget.Logs"/>
+=======
+            Renders the logging event message and adds it to the internal ArrayList of log messages.
+>>>>>>> 8ffe22f633377db00c677447971f28e646ef0707:packages/NLog.4.7.5/lib/monoandroid44/NLog.xml
             </summary>
             <param name="logEvent">The logging event.</param>
         </member>
