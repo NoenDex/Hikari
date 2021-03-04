@@ -40,11 +40,11 @@ namespace HikariLex
             UserPrincipal usr = UserPrincipal.FindByIdentity(ctx, IdentityType.SamAccountName, samAccountName);
             if (usr != null)
             {
-                log.Info("Found: {0} -> {1}; [{2}]\n", usr.SamAccountName, usr.DisplayName, usr.Description);
+                log.Info($"Found: {usr.SamAccountName} -> {usr.DisplayName}; [{usr.Description}]\n");
             }
             else
             {
-                log.Error("User: \"{0}\" NOT found in AD.", samAccountName);
+                log.Error($"User: \"{samAccountName}\" NOT found in AD.");
                 return null;
             }
             return usr;
@@ -57,16 +57,16 @@ namespace HikariLex
             PrincipalSearchResult<Principal> groups = user.GetGroups();
             stopwatch.Stop();
             IEnumerable<string> groupNames = groups.Select(x => x.SamAccountName);
-            IEnumerable<string> groupNamesAndDescriptions = groups.OrderBy(g => g.SamAccountName).Select(x => string.Format("{0} - ({1})", x.SamAccountName.ToUpper(), x.Description)).Distinct();
+            IEnumerable<string> groupNamesAndDescriptions = groups.OrderBy(g => g.SamAccountName).Select(x => $"{x.SamAccountName.ToUpper()} - ({x.Description})").Distinct();
             groupNames = (from groupName in groupNames orderby groupName select groupName.Trim().ToUpper()).Distinct();
-            log.Info("Group membership for {0} -> {1}; [{2}]", user.SamAccountName, user.DisplayName, user.Description);
+            log.Info($"Group membership for {user.SamAccountName} -> {user.DisplayName}; [{user.Description}]");
             log.Info("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
             foreach (string group in groupNamesAndDescriptions)
             {
                log.Info(group);
             }
             log.Info("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
-            log.Info("Active Directory info gathering time elapsed: {0:00.00}s", stopwatch.Elapsed.TotalSeconds);
+            log.Info($"Active Directory info gathering time elapsed: {stopwatch.Elapsed.TotalSeconds:00.00}s");
             return groupNames;
         }
 
