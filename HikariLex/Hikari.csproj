@@ -64,14 +64,9 @@
     <Reference Include="FluentCommandLineParser, Version=1.4.3.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\FluentCommandLineParser.1.4.3\lib\net35\FluentCommandLineParser.dll</HintPath>
     </Reference>
-<<<<<<< HEAD
     <Reference Include="NLog, Version=4.0.0.0, Culture=neutral, PublicKeyToken=5120e14c03d0593c">
       <HintPath>..\packages\NLog.4.7.8\lib\net45\NLog.dll</HintPath>
       <Private>True</Private>
-=======
-    <Reference Include="NLog, Version=4.0.0.0, Culture=neutral, PublicKeyToken=5120e14c03d0593c, processorArchitecture=MSIL">
-      <HintPath>..\packages\NLog.4.7.5\lib\net45\NLog.dll</HintPath>
->>>>>>> 8ffe22f633377db00c677447971f28e646ef0707
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Configuration" />
@@ -109,7 +104,6 @@
       <SubType>Designer</SubType>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup Label="HikariScriptFiles">
     <Compile Include="HikariScript.Parser.cs">

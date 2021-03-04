@@ -1,5 +1,5 @@
 ﻿/*
-Copyright (c) 2020, Stefan Bazelkov
+Copyright (c) 2020-2021, Stefan Bazelkov
 All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
@@ -48,7 +48,7 @@ namespace HikariLex
         public bool GetFirstAvailableLetter { get; set; }
     }
 
-    class Program
+    static class Program
     {
         private static readonly Logger log = LogManager.GetLogger("Hikari");
 
@@ -61,7 +61,7 @@ namespace HikariLex
         private static bool getFirstAvailableLetter = true;
         private static Queue<string> unused;
 
-        private const int SW_HIDE = 0;
+        private const int ERROR_SW_HIDE = 0;
 
         [DllImport("kernel32.dll")]
         static extern IntPtr GetConsoleWindow();
@@ -72,7 +72,7 @@ namespace HikariLex
         [DllImport("winspool.drv", CharSet = CharSet.Unicode)]
         public static extern bool AddPrinterConnection(string pName);
 
-        static int Main(string[] args)
+        private static int Main(string[] args)
         {
             LoggingConfiguration config = LogManager.Configuration;
             if (config == null)
@@ -86,7 +86,7 @@ namespace HikariLex
             fileRule.DisableLoggingForLevels(LogLevel.Info, LogLevel.Fatal);
             LogManager.Configuration = config;
 
-            string script = string.Empty;
+            string script;
 
             Stopwatch stopwatch = new Stopwatch();
             stopwatch.Start();
@@ -143,7 +143,7 @@ namespace HikariLex
             }
 
             log.Info("");
-            log.Info("Hikari V{0} - created by Stefan Bazelkov", version);
+            log.Info($"Hikari V{version} - created by Stefan Bazelkov");
 
             if (result.HelpCalled)
             {
@@ -164,7 +164,7 @@ namespace HikariLex
             {
                 log.Error(result.ErrorText);
                 stopwatch.Stop();
-                log.Info("Time elapsed: {0:00.00}s", stopwatch.Elapsed.TotalSeconds);
+                log.Info($"Time elapsed: {stopwatch.Elapsed.TotalSeconds:00.00}s");
                 ShowUserAlert("Command line arguments parsing failed!");
                 return -1;
             }
@@ -173,7 +173,7 @@ namespace HikariLex
             {
                 // do not show log if console is hidden
                 consoleRule.DisableLoggingForLevels(LogLevel.Trace, LogLevel.Fatal);
-                ShowWindow(GetConsoleWindow(), SW_HIDE);
+                ShowWindow(GetConsoleWindow(), ERROR_SW_HIDE);
                 log.Info("Start with console window hidden.");
             }
 
@@ -181,10 +181,10 @@ namespace HikariLex
 
             if (!File.Exists(appArg.ScriptFile))
             {
-                log.Error("\"{0}\" doesn't exist!", appArg.ScriptFile);
+                log.Error($"\"{appArg.ScriptFile}\" doesn't exist!");
                 stopwatch.Stop();
-                log.Info("Time elapsed: {0:00.00}s", stopwatch.Elapsed.TotalSeconds);
-                ShowUserAlert(string.Format("Missing or wrong script file '{0}'!", appArg.ScriptFile));
+                log.Info($"Time elapsed: {stopwatch.Elapsed.TotalSeconds:00.00}s");
+                ShowUserAlert($"Missing or wrong script file '{appArg.ScriptFile}'!");
                 return -2;
             }
 
@@ -194,7 +194,7 @@ namespace HikariLex
                 if (user == null)
                 {
                     stopwatch.Stop();
-                    log.Info("Time elapsed: {0:00.00}s", stopwatch.Elapsed.TotalSeconds);
+                    log.Info($"Time elapsed: {stopwatch.Elapsed.TotalSeconds:00.00}s");
                     log.Error($"Error in resolving provided username: \"{appArg.UserName}\"");
                     return -6;
                 }
@@ -205,7 +205,7 @@ namespace HikariLex
                 // Do not map network drives if username argument is present
                 // Only check the network shares to be connected for that AD user 
                 doMapping = false;
-                log.Warn("Checking mappings for \"{0}\".", user.SamAccountName);
+                log.Warn($"Checking mappings for \"{user.SamAccountName}\".");
                 log.Warn("No network drives will be connected.");
             }
             else
@@ -222,7 +222,7 @@ namespace HikariLex
 
             Console.WriteLine();
 
-            log.Info("Processing \"{0}\" script ...", appArg.ScriptFile);
+            log.Info($"Processing \"{appArg.ScriptFile}\" script ...");
 
             using (StreamReader file = new StreamReader(appArg.ScriptFile))
             {
@@ -259,7 +259,7 @@ namespace HikariLex
 
             stopwatch.Stop();
             Console.WriteLine();
-            log.Info("Total time elapsed: {0:00.00}s", stopwatch.Elapsed.TotalSeconds);
+            log.Info($"Total time elapsed: {stopwatch.Elapsed.TotalSeconds:00.00}s");
             Console.WriteLine();
 
             return 0;
@@ -267,13 +267,13 @@ namespace HikariLex
 
         private static string NextDriveLetter(string DriveLetter)
         {
-            if (string.IsNullOrWhiteSpace(DriveLetter) || unused.Count() == 0 || DriveLetter.Length < 2)
+            if (string.IsNullOrWhiteSpace(DriveLetter) || !unused.Any() || DriveLetter.Length < 2)
                 return string.Empty;
 
             char letter = DriveLetter[0];
 
             // embarrassing conversion to List
-            List<string> unused_list = unused.ToList();
+            List<string> unusedList = unused.ToList();
 
             while (true)
             {
@@ -284,12 +284,12 @@ namespace HikariLex
 
                 string nextDriveLetter = $"{letter}:";
 
-                int index = unused_list.IndexOf(nextDriveLetter);
+                int index = unusedList.IndexOf(nextDriveLetter);
                 if (index > -1)
                 {
-                    unused_list.RemoveAt(index);
+                    unusedList.RemoveAt(index);
                     // embarrassing conversion back to Queue
-                    unused = new Queue<string>(unused_list);
+                    unused = new Queue<string>(unusedList);
                     return nextDriveLetter;
                 }
             }
@@ -307,7 +307,7 @@ namespace HikariLex
             }
 
             Console.WriteLine();
-            log.Warn("There {0} {1} conflict{2} detected.", totalConflicts == 1 ? "is" : "are", totalConflicts, totalConflicts == 1 ? string.Empty : "s");
+            log.Warn($"There {(totalConflicts == 1 ? "is" : "are")} {totalConflicts} conflict{(totalConflicts == 1 ? string.Empty : "s")} detected.");
             Console.WriteLine();
             // A, B and C are taken for sure! =)
             List<string> alpha = "DEFGHIJKLMNOPQRSTUVWXYZ".ToCharArray().Select(c => c + ":").ToList();
@@ -318,7 +318,11 @@ namespace HikariLex
             if (doMapping)
             {
                 // All local fixed drives & CD/DVD drives
-                List<string> localDrives = DriveInfo.GetDrives().ToList().Where(d => d.DriveType == DriveType.Fixed || d.DriveType == DriveType.CDRom).Select(d => d.Name.Substring(0, 2).ToUpper()).ToList();
+                List<string> localDrives = DriveInfo.GetDrives()
+                    .ToList()
+                    .Where(d => d.DriveType == DriveType.Fixed || d.DriveType == DriveType.CDRom)
+                    .Select(d => d.Name.Substring(0, 2).ToUpper())
+                    .ToList();
                 // Add local fixed drives to used drives
                 used.AddRange(localDrives);
 
@@ -327,7 +331,7 @@ namespace HikariLex
             }
 
             // Generate unused drive letters queue out of all possible excluding used and local fixed drives
-            unused = new Queue<string>(alpha.Where(l => !used.Any(c => c == l)));
+            unused = new Queue<string>(alpha.Where(l => used.All(c => c != l)));
 
             // Try moving until resolved or no more available drives
             while (model.TotalConflicts() > 0 && unused.Count > 0)
@@ -370,7 +374,7 @@ namespace HikariLex
             {
                 string msg = "There is a problem connecting some of your network drives.\nPlease, contact Service Desk to resolve the issue.";
                 if (!string.IsNullOrEmpty(message))
-                    msg = string.Format("{0}\n\nDetails: {1}", msg, message);
+                    msg = $"{msg}\n\nDetails: {message}";
                 MessageBox.Show(msg, "Connect network drives", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
@@ -400,27 +404,27 @@ namespace HikariLex
             foreach (var drive in model.Drives)
             {
                 Tuple<string, string> exp_unc = (drive.Value).FirstOrDefault();
-                string DriveLetter = drive.Key;
+                string driveLetter = drive.Key;
                 string expression = exp_unc.Item1;
                 string unc = exp_unc.Item2;
                 driveForker.Fork(delegate
                 {
                     if (!Directory.Exists(unc))
                     {
-                        log.Error($"Network path \"{unc}\" doesn't exist! Drive {DriveLetter} for [{expression}] is NOT connected!");
+                        log.Error($"Network path \"{unc}\" doesn't exist! Drive {driveLetter} for [{expression}] is NOT connected!");
                         success = false;
                     }
                     else
                     {
-                        string result = InvokeWindowsNetworking.connectToRemote(DriveLetter, unc);
+                        string result = InvokeWindowsNetworking.connectToRemote(driveLetter, unc);
                         if (!string.IsNullOrEmpty(result))
                         {
-                            log.Error($"Network drive {DriveLetter} -> \"{unc}\" ERROR: {result}");
+                            log.Error($"Network drive {driveLetter} -> \"{unc}\" ERROR: {result}");
                             success = false;
                         }
                         else
                         {
-                            log.Info($"{DriveLetter} -> \"{unc}\" [{expression}]");
+                            log.Info($"{driveLetter} -> \"{unc}\" [{expression}]");
                         }
                     }
                 });
@@ -469,35 +473,35 @@ namespace HikariLex
                 (drive) => drive.DriveType == DriveType.Network))
             {
                 //Shave the "\" and call drop function.  Note:  Remaps on relogin and doesn't force close.
-                string networDriveName = networkDrive.Name.Substring(0, 2);
+                string networkDriveName = networkDrive.Name.Substring(0, 2);
                 //Force disconnect network shares
-                int result = InvokeWindowsNetworking.DropNetworkConnection(networDriveName, 0, true);
+                int result = InvokeWindowsNetworking.DropNetworkConnection(networkDriveName, 0, true);
 
                 switch (result)
                 {
                     case InvokeWindowsNetworking.NO_ERROR: //Success
-                        log.Info("Disconnect drive: {0}", networDriveName);
+                        log.Info($"Disconnect drive: {networkDriveName}");
                         break;
                     case InvokeWindowsNetworking.ERROR_BAD_PROFILE:
-                        log.Error("Disconnect drive - Bad profile: {0}", networDriveName);
+                        log.Error($"Disconnect drive - Bad profile: {networkDriveName}");
                         break;
                     case InvokeWindowsNetworking.ERROR_CANNOT_OPEN_PROFILE:
-                        log.Error("Disconnect drive - Cannot open profile: {0}", networDriveName);
+                        log.Error($"Disconnect drive - Cannot open profile: {networkDriveName}");
                         break;
                     case InvokeWindowsNetworking.ERROR_DEVICE_IN_USE:
-                        log.Error("Disconnect drive - Device in use: {0}", networDriveName);
+                        log.Error($"Disconnect drive - Device in use: {networkDriveName}");
                         break;
                     case InvokeWindowsNetworking.ERROR_EXTENDED_ERROR:
-                        log.Error("Disconnect drive - Extended error: {0}", networDriveName);
+                        log.Error($"Disconnect drive - Extended error: {networkDriveName}");
                         break;
                     case InvokeWindowsNetworking.ERROR_NOT_CONNECTED:
-                        log.Error("Disconnect drive - Device not connected: {0}", networDriveName);
+                        log.Error($"Disconnect drive - Device not connected: {networkDriveName}");
                         break;
                     case InvokeWindowsNetworking.ERROR_OPEN_FILES:
-                        log.Error("Disconnect drive - Error open files: {0}", networDriveName);
+                        log.Error($"Disconnect drive - Error open files: {networkDriveName}");
                         break;
                     default:
-                        log.Error("Disconnect drive - Unknown error code: {0}", networDriveName);
+                        log.Error($"Disconnect drive - Unknown error code: {networkDriveName}");
                         break;
                 }
             }
