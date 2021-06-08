@@ -216,6 +216,7 @@ namespace HikariLex
                 doMapping = true;
                 user = UserPrincipal.Current;
                 DisconnectAllLocalNetworkDrives();
+                log.Info($"Connecting network drives for \"{user.SamAccountName}\".");
             }
 
             groups = ActiveDirectoryHelper.GetMembership(user).ToList();
@@ -233,7 +234,7 @@ namespace HikariLex
             var parser = new HikariScriptParser(groups);
             try
             {
-                parser.UserName = user.SamAccountName.Trim();
+                parser.UserName = user.SamAccountName;
                 parser.Parse(script);
                 log.Info(parser.Model);
             }

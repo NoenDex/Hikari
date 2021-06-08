@@ -24,6 +24,7 @@ OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 using NLog;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.DirectoryServices.AccountManagement;
@@ -34,40 +35,85 @@ namespace HikariLex
     public static class ActiveDirectoryHelper
     {
         private static readonly Logger log = LogManager.GetLogger("AD");
+
+        private static readonly List<string> GroupMembershipResult = new List<string>();
+        private static readonly List<string> GroupNamesAndDescriptions = new List<string>();
+
         public static UserPrincipal FindPrincipal(string samAccountName)
         {
-            PrincipalContext ctx = new PrincipalContext(ContextType.Domain);
-            UserPrincipal usr = UserPrincipal.FindByIdentity(ctx, IdentityType.SamAccountName, samAccountName);
-            if (usr != null)
+            try
             {
-                log.Info($"Found: {usr.SamAccountName} -> {usr.DisplayName}; [{usr.Description}]\n");
+                PrincipalContext directory_context = new PrincipalContext(ContextType.Domain, Environment.UserDomainName);
+                UserPrincipal usr = UserPrincipal.FindByIdentity(directory_context, IdentityType.SamAccountName, samAccountName);
+                if (usr != null)
+                {
+                    log.Info($"Found: {usr.SamAccountName} -> {usr.DisplayName}; [{usr.Description}]\n");
+                }
+                else
+                {
+                    log.Error($"User: \"{samAccountName}\" NOT found in AD.");
+                    return null;
+                }
+                return usr;
             }
-            else
+            catch (Exception x)
             {
-                log.Error($"User: \"{samAccountName}\" NOT found in AD.");
-                return null;
+                log.Error($"Error getting PricipalContext for \"{samAccountName}\": {x.Message}");
+                throw new Exception("samAccountName");
             }
-            return usr;
         }
 
         public static IEnumerable<string> GetMembership(UserPrincipal user)
         {
+            GroupMembershipResult.Clear();
+            GroupNamesAndDescriptions.Clear();
+
+            if (user == null)
+            {
+                log.Error("UserPrincipal object is NULL!");
+                return new List<string>();
+            }
+
             Stopwatch stopwatch = new Stopwatch();
             stopwatch.Start();
-            PrincipalSearchResult<Principal> groups = user.GetGroups();
-            stopwatch.Stop();
-            IEnumerable<string> groupNames = groups.Select(x => x.SamAccountName);
-            IEnumerable<string> groupNamesAndDescriptions = groups.OrderBy(g => g.SamAccountName).Select(x => $"{x.SamAccountName.ToUpper()} - ({x.Description})").Distinct();
-            groupNames = (from groupName in groupNames orderby groupName select groupName.Trim().ToUpper()).Distinct();
-            log.Info($"Group membership for {user.SamAccountName} -> {user.DisplayName}; [{user.Description}]");
-            log.Info("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
-            foreach (string group in groupNamesAndDescriptions)
+            try
             {
-               log.Info(group);
+                using (PrincipalSearchResult<Principal> groups = user.GetGroups(new PrincipalContext(ContextType.Domain, Environment.UserDomainName)))
+                {
+                    GroupMembershipResult.AddRange(
+                        groups.Where(x => x != null && x.SamAccountName != string.Empty)
+                        .Select(x => x.SamAccountName.ToUpper())
+                        .OrderBy(x => x)
+                        .Distinct());
+                }
+
+                using (PrincipalSearchResult<Principal> groups = user.GetGroups(new PrincipalContext(ContextType.Domain, Environment.UserDomainName)))
+                {
+                    GroupNamesAndDescriptions.AddRange(
+                        groups.Where(x => x != null && x.SamAccountName != string.Empty)
+                        .OrderBy(g => g.SamAccountName)
+                        .Select(x => $"{x.SamAccountName.ToUpper()} - ({x.Description})")
+                        .Distinct());
+                }
+
+                stopwatch.Stop();
+                log.Info($"Group membership for {user.SamAccountName} -> {user.DisplayName}; [{user.Description}]");
+                log.Info("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
+                foreach (string group in GroupNamesAndDescriptions)
+                {
+                    log.Info(group);
+                }
+                log.Info("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
+                log.Info($"Active Directory info gathering time elapsed: {stopwatch.Elapsed.TotalSeconds:00.00}s");
+
+                return GroupMembershipResult;
+
             }
-            log.Info("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
-            log.Info($"Active Directory info gathering time elapsed: {stopwatch.Elapsed.TotalSeconds:00.00}s");
-            return groupNames;
+            catch (Exception x)
+            {
+                log.Error($"Get membership failed: {x.Message}");
+                return new List<string>();
+            }
         }
 
     }
