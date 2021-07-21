@@ -46,6 +46,7 @@ namespace HikariLex
         public bool HideConsole { get; set; }
         public bool ShowBuildVersion { get; set; }
         public bool GetFirstAvailableLetter { get; set; }
+        public bool UseWindowsIdentity { get; set; }
     }
 
     static class Program
@@ -59,6 +60,7 @@ namespace HikariLex
         private static bool hideConsole = false;
         private static bool showBuildVersion = false;
         private static bool getFirstAvailableLetter = true;
+        private static bool useWindowsIdentity = true;
         private static Queue<string> unused;
 
         private const int ERROR_SW_HIDE = 0;
@@ -130,6 +132,12 @@ namespace HikariLex
                 .Callback(arg => getFirstAvailableLetter = arg)
                 .SetDefault(false)
                 .WithDescription("Resolve drive letter conflict to first available. Default: FALSE (Resolve to next available drive letter)");
+
+            p.Setup(arg => arg.UseWindowsIdentity)
+                .As('w', "identity")
+                .Callback(arg => useWindowsIdentity = arg)
+                .SetDefault(false)
+                .WithDescription("Use Windows Identity to resolve user's groups or request group membership from AD. Default: FALSE (Using AD method)");
 
             p.SetupHelp("?", "help")
                 .Callback(text => Console.WriteLine(text));
@@ -219,7 +227,7 @@ namespace HikariLex
                 log.Info($"Connecting network drives for \"{user.SamAccountName}\".");
             }
 
-            groups = ActiveDirectoryHelper.GetMembership(user).ToList();
+            groups = ActiveDirectoryHelper.GetMembership(user, useWindowsIdentity).ToList();
 
             Console.WriteLine();
 
