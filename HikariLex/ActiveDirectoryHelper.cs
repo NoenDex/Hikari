@@ -78,19 +78,16 @@ namespace HikariLex
             stopwatch.Start();
             try
             {
-                using (PrincipalSearchResult<Principal> groups = user.GetGroups(new PrincipalContext(ContextType.Domain, Environment.UserDomainName)))
+                using (PrincipalSearchResult<Principal> groups = UserPrincipal.Current.GetAuthorizationGroups())
                 {
                     GroupMembershipResult.AddRange(
-                        groups.Where(x => x != null && x.SamAccountName != string.Empty)
+                        groups.Where(x => x != null && x.SamAccountName != null && x.SamAccountName != string.Empty)
                         .Select(x => x.SamAccountName.ToUpper())
                         .OrderBy(x => x)
                         .Distinct());
-                }
 
-                using (PrincipalSearchResult<Principal> groups = user.GetGroups(new PrincipalContext(ContextType.Domain, Environment.UserDomainName)))
-                {
                     GroupNamesAndDescriptions.AddRange(
-                        groups.Where(x => x != null && x.SamAccountName != string.Empty)
+                        groups.Where(x => x != null && x.SamAccountName != null && x.SamAccountName != string.Empty)
                         .OrderBy(g => g.SamAccountName)
                         .Select(x => $"{x.SamAccountName.ToUpper()} - ({x.Description})")
                         .Distinct());
@@ -111,6 +108,8 @@ namespace HikariLex
             }
             catch (Exception x)
             {
+                if (stopwatch.IsRunning)
+                    stopwatch.Stop();
                 log.Error($"Get membership failed: {x.Message}");
                 return new List<string>();
             }
