@@ -29,6 +29,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.DirectoryServices.AccountManagement;
 using System.Linq;
+using System.Security.Principal;
 
 namespace HikariLex
 {
@@ -63,7 +64,7 @@ namespace HikariLex
             }
         }
 
-        public static IEnumerable<string> GetMembership(UserPrincipal user)
+        public static IEnumerable<string> GetMembership(UserPrincipal user, bool UseWindowsIdentity = false)
         {
             GroupMembershipResult.Clear();
             GroupNamesAndDescriptions.Clear();
@@ -71,32 +72,45 @@ namespace HikariLex
             if (user == null)
             {
                 log.Error("UserPrincipal object is NULL!");
-                return new List<string>();
+                return GroupMembershipResult;
             }
 
             Stopwatch stopwatch = new Stopwatch();
             stopwatch.Start();
-            try
+
+            if (UseWindowsIdentity)
             {
-                using (PrincipalSearchResult<Principal> groups = UserPrincipal.Current.GetAuthorizationGroups())
+                // Use faster, but less informational (missing group's description) method
+
+                char[] separator = new char[] { '\\' };
+                WindowsIdentity windowsIdentity = new WindowsIdentity(user.SamAccountName);
+                string domain_name = Environment.GetEnvironmentVariable("USERDOMAIN");
+
+                if (string.IsNullOrEmpty(domain_name))
+                {
+                    log.Error("Windows Identity: Domain name is NULL");
+                }
+
+                try
                 {
                     GroupMembershipResult.AddRange(
-                        groups.Where(x => x != null && x.SamAccountName != null && x.SamAccountName != string.Empty)
-                        .Select(x => x.SamAccountName.ToUpper())
-                        .OrderBy(x => x)
-                        .Distinct());
-
-                    GroupNamesAndDescriptions.AddRange(
-                        groups.Where(x => x != null && x.SamAccountName != null && x.SamAccountName != string.Empty)
-                        .OrderBy(g => g.SamAccountName)
-                        .Select(x => $"{x.SamAccountName.ToUpper()} - ({x.Description})")
-                        .Distinct());
+                    // Translate() does SID to Name mapping
+                    windowsIdentity.Groups.Select(g => g.Translate(typeof(NTAccount)).ToString().ToUpper())
+                            .Where(x => x != null && x != string.Empty && x.StartsWith(domain_name, StringComparison.InvariantCultureIgnoreCase))
+                            .Select(group => group.Split(separator, StringSplitOptions.RemoveEmptyEntries).Last())
+                            .OrderBy(x => x)
+                            .Distinct());
                 }
+                catch (Exception x)
+                {
+                    log.Error($"Get membership using Windows Identity failed: {x.Message}");
+                }
+
 
                 stopwatch.Stop();
                 log.Info($"Group membership for {user.SamAccountName} -> {user.DisplayName}; [{user.Description}]");
                 log.Info("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
-                foreach (string group in GroupNamesAndDescriptions)
+                foreach (string group in GroupMembershipResult)
                 {
                     log.Info(group);
                 }
@@ -104,14 +118,48 @@ namespace HikariLex
                 log.Info($"Active Directory info gathering time elapsed: {stopwatch.Elapsed.TotalSeconds:00.00}s");
 
                 return GroupMembershipResult;
-
             }
-            catch (Exception x)
+            else
             {
-                if (stopwatch.IsRunning)
+                // Let's ask Active Directory (slower method)
+
+                try
+                {
+                    using (PrincipalSearchResult<Principal> groups = user.GetAuthorizationGroups())
+                    {
+                        GroupMembershipResult.AddRange(
+                            groups.Where(x => x != null && x.SamAccountName != null && x.SamAccountName != string.Empty)
+                            .Select(x => x.SamAccountName.ToUpper())
+                            .OrderBy(x => x)
+                            .Distinct());
+
+                        GroupNamesAndDescriptions.AddRange(
+                            groups.Where(x => x != null && x.SamAccountName != null && x.SamAccountName != string.Empty)
+                            .OrderBy(g => g.SamAccountName)
+                            .Select(x => $"{x.SamAccountName.ToUpper()} - ({x.Description})")
+                            .Distinct());
+                    }
+
                     stopwatch.Stop();
-                log.Error($"Get membership failed: {x.Message}");
-                return new List<string>();
+                    log.Info($"Group membership for {user.SamAccountName} -> {user.DisplayName}; [{user.Description}]");
+                    log.Info("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
+                    foreach (string group in GroupNamesAndDescriptions)
+                    {
+                        log.Info(group);
+                    }
+                    log.Info("~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~");
+                    log.Info($"Active Directory info gathering time elapsed: {stopwatch.Elapsed.TotalSeconds:00.00}s");
+
+                    return GroupMembershipResult;
+
+                }
+                catch (Exception x)
+                {
+                    if (stopwatch.IsRunning)
+                        stopwatch.Stop();
+                    log.Error($"Get membership using AD failed: {x.Message}");
+                    return new List<string>();
+                }
             }
         }
 
